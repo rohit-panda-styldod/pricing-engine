@@ -1,0 +1,32 @@
+name: Claude Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Review this PR thoroughly. Examine ALL code in the repository, not just the diff. Focus on:
+
+            1. Bugs and logic errors, especially missing input validation
+            2. Edge cases that aren't handled (e.g., what happens with extreme or invalid inputs?)
+            3. Test coverage gaps -- are there scenarios that should be tested but aren't?
+            4. Security vulnerabilities
+
+            Be specific: mention file paths, line numbers, and show example inputs that would trigger issues.
+            If you find bugs in EXISTING code (not just the new changes), flag those too.
